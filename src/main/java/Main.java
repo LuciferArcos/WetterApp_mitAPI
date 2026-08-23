@@ -3,7 +3,8 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-
+import io.github.cdimascio.dotenv.Dotenv;
+import org.json.JSONObject;
 
 public class Main {
     public static void main(String[] args){
@@ -12,18 +13,19 @@ public class Main {
         //               Wetterdaten werden lesbar angezeigt,
         //               Fehler werden abgefangen.
 
+        Dotenv dotenv = Dotenv.load();
+        String apiKey = dotenv.get("API_KEY");
 
 
-        String apiKey = System.getenv("WETTER_API_KEY");
 
-        String url = "http://api.openweathermap.org/geo/1.0/direct?q=London&limit=5&appid=" + apiKey;
+        String url = "https://api.openweathermap.org/data/2.5/weather?q=London&appid=" + apiKey;
 
         HttpClient client = HttpClient.newHttpClient();
 
 
 
-        HttpRequest request = HttpRequest.newBuilder().
-                uri(URI.create(url)).GET().build();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url)).GET().build();
 
         try {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
