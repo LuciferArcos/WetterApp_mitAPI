@@ -7,6 +7,7 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 import io.github.cdimascio.dotenv.Dotenv;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class Main {
@@ -26,7 +27,7 @@ public class Main {
         String encoded = URLEncoder.encode(stadt, StandardCharsets.UTF_8);
 
 
-        String url = "https://api.openweathermap.org/data/2.5/weather?q=" + stadt + "&appid=" + apiKey;
+        String url = "https://api.openweathermap.org/data/2.5/weather?q=" + encoded + "&appid=" + apiKey;
 
         HttpClient client = HttpClient.newHttpClient();
 
@@ -38,10 +39,50 @@ public class Main {
         try {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-            JSONObject obj = new JSONObject(response);
+            JSONObject obj = new JSONObject(response.body());
 
-            //String base = obj.getString("weather");
-            //int temp = obj.getInt();
+            String name = obj.getString("name");
+
+            String beschreibung = "";
+            JSONArray weather = obj.getJSONArray("weather");
+            for(int i = 0; i < weather.length(); i++){
+                JSONObject details = weather.getJSONObject(i);
+                beschreibung = details.getString("description");
+            }
+
+            JSONObject main = obj.getJSONObject("main");
+            double temp = main.getDouble("temp");
+            int pressure = main.getInt("pressure");
+            int humidity = main.getInt("humidity");
+            int sea_level = main.getInt("sea_level");
+            int grnd_level = main.getInt("grnd_level");
+            String meeresspiegel = "";
+            int hoehe;
+            if(sea_level < grnd_level){
+                hoehe = grnd_level - sea_level;
+                meeresspiegel = name + " liegt " + hoehe + "m über dem Meerespiegel.";
+            }
+            else if(sea_level > grnd_level){
+                hoehe = sea_level - grnd_level;
+                meeresspiegel = name + " liegt " + hoehe + "m unter dem Meerespiegel. \n";
+            }
+            else{
+                meeresspiegel = name + " liegt auf der Höhe des Meeresspiegel. \n";
+            }
+
+            int visibility = obj.getInt("visibility");
+
+            JSONObject wind = obj.getJSONObject("wind");
+            double speed = wind.getDouble("speed");
+            int deg = wind.getInt("deg");
+
+
+
+            System.out.println("In " + name + " gibt es " + beschreibung + ".\n" +
+                    "Die Temperatur beträgt " + temp + " Grad Celcius, der Luftdruck ist " + pressure + " Pascal,\n" +
+                    "die Luftfeuchtigkeit beträgt " + humidity + ". " + meeresspiegel +
+                    "Man kann " + visibility + "m weit sehen und der Wind hat eine Geschwindigkeit von " + speed + "kmh und einen Winkel von " + deg);
+
 
 
             System.out.println(response.statusCode());
