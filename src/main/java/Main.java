@@ -16,7 +16,7 @@ public class Main {
         // Fertig, wenn: Request an echte API wird gesendet(check),
         //               JSON-Antwort wird korrekt geparst(check),
         //               Wetterdaten werden lesbar angezeigt(check),
-        //               Fehler werden abgefangen().
+        //               Fehler werden abgefangen(check).
 
         Scanner scanner = new Scanner(System.in);
 
@@ -113,11 +113,7 @@ public class Main {
             else{
                 System.out.println("Fehler-Statuscode: " + response.statusCode());
             }
-
-
-
-
-
+            
         }
         catch(InterruptedException e){
             System.out.println("Unterbrochen");
