@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class Main {
@@ -49,27 +50,34 @@ public class Main {
                 JSONArray weather = obj.getJSONArray("weather");
                 for(int i = 0; i < weather.length(); i++){
                     JSONObject details = weather.getJSONObject(i);
-                    beschreibung = details.getString("description");
+                    beschreibung += details.getString("description")  + ", ";
                 }
+                beschreibung = beschreibung.substring(0, beschreibung.length() - 2);
+
 
                 JSONObject main = obj.getJSONObject("main");
                 double temp = main.getDouble("temp");
                 int pressure = main.getInt("pressure");
                 int humidity = main.getInt("humidity");
-                int sea_level = main.getInt("sea_level");
-                int grnd_level = main.getInt("grnd_level");
+
                 String meeresspiegel = "";
-                int hoehe;
-                if(sea_level < grnd_level){
-                    hoehe = grnd_level - sea_level;
-                    meeresspiegel = name + " liegt " + hoehe + "m über dem Meerespiegel.";
+                try {
+                    int sea_level = main.getInt("sea_level");
+                    int grnd_level = main.getInt("grnd_level");
+
+                    int hoehe;
+                    if (sea_level < grnd_level) {
+                        hoehe = grnd_level - sea_level;
+                        meeresspiegel = name + " liegt " + hoehe + "m über dem Meerespiegel.";
+                    } else if (sea_level > grnd_level) {
+                        hoehe = sea_level - grnd_level;
+                        meeresspiegel = name + " liegt " + hoehe + "m unter dem Meerespiegel. \n";
+                    } else {
+                        meeresspiegel = name + " liegt auf der Höhe des Meeresspiegel. \n";
+                    }
                 }
-                else if(sea_level > grnd_level){
-                    hoehe = sea_level - grnd_level;
-                    meeresspiegel = name + " liegt " + hoehe + "m unter dem Meerespiegel. \n";
-                }
-                else{
-                    meeresspiegel = name + " liegt auf der Höhe des Meeresspiegel. \n";
+                catch(JSONException e){
+                    meeresspiegel = "Meereshöhe im vergleich zu Bodenhöhe ist nicht vorhanden";
                 }
 
                 int visibility = obj.getInt("visibility");
@@ -113,7 +121,7 @@ public class Main {
             else{
                 System.out.println("Fehler-Statuscode: " + response.statusCode());
             }
-            
+
         }
         catch(InterruptedException e){
             System.out.println("Unterbrochen");
